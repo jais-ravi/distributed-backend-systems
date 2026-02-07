@@ -1,0 +1,37 @@
+services:
+  traefik:
+    image: traefik:v2.11
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - ${HOME}/.docker/run/docker.sock:/var/run/docker.sock:ro
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: apps/auth-service/Dockerfile
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.auth.rule=Host(`localhost`) && PathPrefix(`/auth`)"
+      - "traefik.http.routers.auth.entrypoints=web"
+      - "traefik.http.middlewares.auth-strip.stripprefix.prefixes=/auth"
+      - "traefik.http.routers.auth.middlewares=auth-strip"
+      - "traefik.http.services.auth.loadbalancer.server.port=3000"
+
+  user-service:
+    build:
+      context: .
+      dockerfile: apps/user-service/Dockerfile
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.user.rule=Host(`localhost`) && PathPrefix(`/users`)"
+      - "traefik.http.routers.user.entrypoints=web"
+      - "traefik.http.middlewares.user-strip.stripprefix.prefixes=/users"
+      - "traefik.http.routers.user.middlewares=user-strip"
+      - "traefik.http.services.user.loadbalancer.server.port=3002"
