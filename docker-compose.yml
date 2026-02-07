@@ -1,59 +1,49 @@
+version: '3.8'
+
 services:
-  traefik:
-    image: traefik:v2.11
-    command:
-      - "--api.insecure=true"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:80"
-    ports:
-      - "80:80"
-      - "8080:8080"
-    volumes:
-      - ${HOME}/.docker/run/docker.sock:/var/run/docker.sock:ro
+  mongo:
+    image: mongo:latest
+    networks:
+      - traefik-public
 
   auth-service:
     build:
       context: .
       dockerfile: apps/auth-service/Dockerfile
+    environment:
+      - DATABASE_URL=mongodb://mongo:27017/distributed_backend
+      - PORT=3000
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.auth.rule=Host(`localhost`) && PathPrefix(`/auth`)"
+      - "traefik.http.routers.auth.rule=Host(`localhost`) && PathPrefix(`/api/auth`)"
       - "traefik.http.routers.auth.entrypoints=web"
-      - "traefik.http.middlewares.auth-strip.stripprefix.prefixes=/auth"
+      - "traefik.http.middlewares.auth-strip.stripprefix.prefixes=/api/auth"
       - "traefik.http.routers.auth.middlewares=auth-strip"
       - "traefik.http.services.auth.loadbalancer.server.port=3000"
-    environment:
-      - DATABASE_URL=postgresql://user:password@postgres:5432/mydb?schema=public
+    networks:
+      - traefik-public
     depends_on:
-      - postgres
+      - mongo
 
   user-service:
     build:
       context: .
       dockerfile: apps/user-service/Dockerfile
+    environment:
+      - DATABASE_URL=mongodb://mongo:27017/distributed_backend
+      - PORT=3002
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.user.rule=Host(`localhost`) && PathPrefix(`/users`)"
+      - "traefik.http.routers.user.rule=Host(`localhost`) && PathPrefix(`/api/users`)"
       - "traefik.http.routers.user.entrypoints=web"
-      - "traefik.http.middlewares.user-strip.stripprefix.prefixes=/users"
+      - "traefik.http.middlewares.user-strip.stripprefix.prefixes=/api/users"
       - "traefik.http.routers.user.middlewares=user-strip"
       - "traefik.http.services.user.loadbalancer.server.port=3002"
-    environment:
-      - DATABASE_URL=postgresql://user:password@postgres:5432/mydb?schema=public
+    networks:
+      - traefik-public
     depends_on:
-      - postgres
+      - mongo
 
-  postgres:
-    image: postgres:15-alpine
-    environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: mydb
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-
-volumes:
-  postgres-data:
+networks:
+  traefik-public:
+    external: true

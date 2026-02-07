@@ -12,5 +12,8 @@ app.use(express.json());
 app.use(requestLogger);
 
 app.use('/api/v1', healthRoutes);
+app.get('/', (req, res) => {
+    res.json({ message: 'Hello Worlddasdvad!' });
+});
 
 export default app;
