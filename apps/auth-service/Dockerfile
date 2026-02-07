@@ -7,6 +7,7 @@ FROM base AS builder
 WORKDIR /app
 COPY . .
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+RUN pnpm --filter @shared/database db:generate
 RUN pnpm --filter auth-service deploy --legacy /prod/auth-service
 WORKDIR /prod/auth-service
 COPY tsconfig.base.json /tsconfig.base.json

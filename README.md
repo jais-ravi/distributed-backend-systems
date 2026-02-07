@@ -7,7 +7,9 @@ This is a distributed backend system built with Node.js, TypeScript, and pnpm wo
 - **API Gateway**: Traefik (Routes requests to services)
 - **Auth Service**: Handles authentication (Running on port 3000 internally)
 - **User Service**: Handles user management (Running on port 3002 internally)
+- **Database**: PostgreSQL (Running on port 5432)
 - **Shared Packages**:
+  - `@shared/database` (Prisma ORM)
   - `@shared/logger`
   - `@shared/middlewares`
   - `@shared/types`

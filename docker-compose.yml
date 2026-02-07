@@ -23,6 +23,10 @@ services:
       - "traefik.http.middlewares.auth-strip.stripprefix.prefixes=/auth"
       - "traefik.http.routers.auth.middlewares=auth-strip"
       - "traefik.http.services.auth.loadbalancer.server.port=3000"
+    environment:
+      - DATABASE_URL=postgresql://user:password@postgres:5432/mydb?schema=public
+    depends_on:
+      - postgres
 
   user-service:
     build:
@@ -35,3 +39,21 @@ services:
       - "traefik.http.middlewares.user-strip.stripprefix.prefixes=/users"
       - "traefik.http.routers.user.middlewares=user-strip"
       - "traefik.http.services.user.loadbalancer.server.port=3002"
+    environment:
+      - DATABASE_URL=postgresql://user:password@postgres:5432/mydb?schema=public
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mydb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+volumes:
+  postgres-data:
