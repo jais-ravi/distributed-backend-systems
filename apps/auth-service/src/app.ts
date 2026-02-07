@@ -11,9 +11,6 @@ app.use(cors());
 app.use(express.json());
 app.use(requestLogger);
 
-app.use('/api/v1', healthRoutes);
-app.get('/', (req, res) => {
-    res.json({ message: 'Hello Worlddasdvad!' });
-});
+app.use('/v1', healthRoutes);
 
 export default app;
