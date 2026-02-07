@@ -11,6 +11,6 @@ app.use(cors());
 app.use(express.json());
 app.use(requestLogger);
 
-app.use('/', healthRoutes);
+app.use('/api/v1', healthRoutes);
 
 export default app;
