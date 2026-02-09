@@ -1,12 +1,6 @@
 version: '3.8'
 
 services:
-  mongo:
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo-data:/data/db
-
   auth-service:
     build:
       target: dev
@@ -16,6 +10,9 @@ services:
       - /app/apps/auth-service/node_modules
     environment:
       - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+    ports:
+      - "3000:3000"
 
   user-service:
     build:
@@ -26,6 +23,6 @@ services:
       - /app/apps/user-service/node_modules
     environment:
       - NODE_ENV=development
-
-volumes:
-  mongo-data:
+      - CHOKIDAR_USEPOLLING=true
+    ports:
+      - "3002:3002"

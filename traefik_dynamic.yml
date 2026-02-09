@@ -1,0 +1,32 @@
+http:
+  routers:
+    auth:
+      rule: "Host(`localhost`) && PathPrefix(`/api/auth`)"
+      service: auth
+      middlewares:
+        - auth-strip
+    user:
+      rule: "Host(`localhost`) && PathPrefix(`/api/users`)"
+      service: user
+      middlewares:
+        - user-strip
+
+  middlewares:
+    auth-strip:
+      stripPrefix:
+        prefixes:
+          - "/api/auth"
+    user-strip:
+      stripPrefix:
+        prefixes:
+          - "/api/users"
+
+  services:
+    auth:
+      loadBalancer:
+        servers:
+          - url: "http://auth-service:3000"
+    user:
+      loadBalancer:
+        servers:
+          - url: "http://user-service:3002"

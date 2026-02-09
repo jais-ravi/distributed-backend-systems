@@ -1,17 +1,12 @@
 version: '3.8'
 
 services:
-  mongo:
-    image: mongo:latest
-    networks:
-      - traefik-public
-
   auth-service:
     build:
       context: .
       dockerfile: apps/auth-service/Dockerfile
     environment:
-      - DATABASE_URL=mongodb://mongo:27017/distributed_backend
+      - DATABASE_URL=${DATABASE_URL}
       - PORT=3000
     labels:
       - "traefik.enable=true"
@@ -22,15 +17,13 @@ services:
       - "traefik.http.services.auth.loadbalancer.server.port=3000"
     networks:
       - traefik-public
-    depends_on:
-      - mongo
 
   user-service:
     build:
       context: .
       dockerfile: apps/user-service/Dockerfile
     environment:
-      - DATABASE_URL=mongodb://mongo:27017/distributed_backend
+      - DATABASE_URL=${DATABASE_URL}
       - PORT=3002
     labels:
       - "traefik.enable=true"
@@ -41,8 +34,20 @@ services:
       - "traefik.http.services.user.loadbalancer.server.port=3002"
     networks:
       - traefik-public
-    depends_on:
-      - mongo
+
+  traefik:
+    image: traefik:v3.3
+    command:
+      - "--api.insecure=true"
+      - "--providers.file.filename=/etc/traefik/dynamic_conf.yml"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - ./traefik_dynamic.yml:/etc/traefik/dynamic_conf.yml
+    networks:
+      - traefik-public
 
 networks:
   traefik-public:

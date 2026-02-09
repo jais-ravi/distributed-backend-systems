@@ -13,4 +13,8 @@ app.use(requestLogger);
 
 app.use('/v1', healthRoutes);
 
+app.get('/', (req, res) => {
+    res.json({ message: 'Hello Hot Reload!' });
+});
+
 export default app;
